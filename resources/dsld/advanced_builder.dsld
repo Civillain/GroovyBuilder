@@ -1,0 +1,124 @@
+package dsld
+
+final String ROOT = 'company'
+final String DEPARTMENT = 'department'
+final String EMPLOYEE = 'employee'
+final String NAME = 'name'
+final String ROLE = 'role'
+final String PROVIDER = 'CompanyBuilder'
+final Map TYPE_PARAMS  = [id:String]
+final String BUILDER_TYPE = "builder.advanced.CompanyBuilder"
+final String COMPANY_TYPE = "builder.advanced.model.Company"
+final String DEPARTMENT_TYPE = "builder.advanced.model.Department"
+final String EMPLOYEE_TYPE = "builder.advanced.model.Employee"
+
+// ---------------- ROOT
+contribute (currentType(BUILDER_TYPE) & (~enclosingClosure())) {
+	method name: ROOT,
+			type:COMPANY_TYPE,
+			params:TYPE_PARAMS,
+			doc: '''Create a new company with departments, for example:<br>
+<pre>
+builder.company('ABC') {
+   department('DEP1') {
+      department('DEP1.1') {
+      
+      }
+   }
+}
+</pre>
+''',
+			provider:PROVIDER
+}
+
+//---------------- /ROOT
+
+//---------------- ROOT OBJECTS
+contribute (enclosingClosure()
+					& enclosingCallDeclaringType(BUILDER_TYPE)
+					& enclosingCallName(ROOT)
+					& (~enclosingCallName(EMPLOYEE))) {
+	method name: DEPARTMENT,
+	type:DEPARTMENT_TYPE,
+	params:TYPE_PARAMS,
+	doc: '''Create a department with employees or other departments, for example:<br>
+<pre>
+department('XYZ') {
+	employee('emp12345') {
+
+	}
+}
+</pre>
+or:
+<pre>
+department('DEP1') {
+   department('DEP1.1') {
+      
+   }
+}
+</pre>
+''',
+	provider:PROVIDER
+}
+//---------------- /ROOT OBJECTS
+					
+					
+//---------------- CHILD OBJECTS
+contribute (enclosingClosure() 
+				& (enclosingCallName(DEPARTMENT) 
+				& (~enclosingCallName(EMPLOYEE)) )) {
+	method name: EMPLOYEE,
+		type:EMPLOYEE_TYPE,
+		params:TYPE_PARAMS,
+		doc: '''Add an employee to a department, for example:<br>
+<pre>
+employee('emp12345') {
+	name('John')
+	role('Administrator')
+}
+</pre>
+''',
+		provider:PROVIDER
+}
+//---------------- /CHILD OBJECTS
+
+
+//---------------- ATTRIBUTES
+contribute (enclosingClosure() 
+				& enclosingCallName(EMPLOYEE)
+				& (~enclosingCallName(NAME))
+				& (~enclosingCallName(ROLE)) ) {
+	method name: NAME,
+		type:void,
+		params:TYPE_PARAMS,
+		doc: '''Set the name in the following format:<br>
+<pre>
+name('John')
+</pre>
+''',
+		provider:PROVIDER
+}
+
+contribute (enclosingClosure() 
+				& enclosingCallName(EMPLOYEE)
+				& (~enclosingCallName(NAME))
+				& (~enclosingCallName(ROLE)) ) {
+	method name: ROLE,
+		type:void,
+		params:TYPE_PARAMS,
+		doc: '''Set the role in the following format:<br>
+<pre>
+role('Developer')
+</pre>
+''',
+		provider:PROVIDER
+}
+//---------------- /ATTRIBUTES
+
+
+
+
+
+
+
+					

@@ -1,8 +1,10 @@
-package builder.basic
+package builder.advanced
 
-import builder.basic.model.Company
-import builder.basic.model.Department
-import builder.basic.model.Employee
+import builder.advanced.model.Company
+import builder.advanced.model.Department
+import builder.advanced.model.Employee
+import builder.advanced.model.Payment
+import builder.advanced.service.PaymentService;
 
 /**
  * An example of a basic Groovy Builder.
@@ -10,6 +12,10 @@ import builder.basic.model.Employee
  */
 class CompanyBuilder extends BuilderSupport {
 
+	private Queue<Employee> paymentQueue = new LinkedList<>()
+	
+	private PaymentService paymentService = new PaymentService()
+	
 	@Override
 	protected Object createNode(Object name, Object id) {
 		switch(name) {
@@ -46,7 +52,7 @@ class CompanyBuilder extends BuilderSupport {
 		
 	}
 	
-	private Employee setEmployeeName(String name) {
+	Employee setEmployeeName(String name) {
 		if(current instanceof Employee) {
 			Employee employee = (Employee) current
 			employee.setName(name)
@@ -55,7 +61,7 @@ class CompanyBuilder extends BuilderSupport {
 		}
 	}
 	
-	private Employee setEmployeeRole(String role) {
+	Employee setEmployeeRole(String role) {
 		if(current instanceof Employee) {
 			Employee employee = (Employee) current
 			employee.setRole(role)
@@ -64,12 +70,12 @@ class CompanyBuilder extends BuilderSupport {
 		}
 	}
 
-	private Company createCompany(String id) {
+	Company createCompany(String id) {
 		Company company = new Company(id)
 		return company
 	}
 	
-	private Department createDepartment(String id) {
+	Department createDepartment(String id) {
 		Department department = new Department(id)
 		if(current instanceof Company) {
 			Company company = (Company) current
@@ -81,12 +87,30 @@ class CompanyBuilder extends BuilderSupport {
 		return department
 	}
 	
-	private Employee createEmployee(String id) {
+	Employee createEmployee(String id) {
 		Employee employee = new Employee(id)
 		if(current instanceof Department) {
 			Department department = (Department) current
 			department.getEmployees().add(employee)
 		}
+		
+		employee.metaClass.pay = payEmployee
 		return employee
+	}
+	
+	def payEmployee = { String  amount, Closure c = {} ->
+		Employee employee = (Employee) delegate
+		paymentQueue.add(employee)
+		Payment payment = new Payment()
+		payment.setAmount(amount)
+		employee.metaClass.payment = payment
+		setCurrent(employee)
+		c.call()
+	}
+	
+	void perform() {
+		paymentQueue.each { Employee emp ->
+			paymentService.pay(emp, emp.payment)
+		}
 	}
 }

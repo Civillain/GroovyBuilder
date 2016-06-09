@@ -1,11 +1,11 @@
-package builder.basic
+package builder.advanced
 
 import org.junit.Test
 
-import builder.basic.CompanyBuilder
-import builder.basic.model.Company
-import builder.basic.model.Department
-import builder.basic.model.Employee
+import builder.advanced.CompanyBuilder
+import builder.advanced.model.Company
+import builder.advanced.model.Department
+import builder.advanced.model.Employee
 
 class CompanyBuilderTest {
 	
@@ -19,6 +19,10 @@ class CompanyBuilderTest {
 				employee('emp12345') {
 					name('John')
 					role('Administrator')
+					
+				}
+				employee('emp34').pay("10") {
+					name('Pete')
 				}
 			}
 			department('123') {
@@ -38,6 +42,8 @@ class CompanyBuilderTest {
 			}
 		}
 		
+		builder.perform()
+		
 		assert company != null && company.id == 'ABC'
 		assert company.departments.size() == 2
 		
@@ -53,7 +59,7 @@ class CompanyBuilderTest {
 		
 		Department dept3 = (Department)dept2.departments[0]
 		
-		assert dept1.employees.size() == 1
+		assert dept1.employees.size() == 2
 		assert dept2.employees.size() == 1
 		assert dept3.employees.size() == 1
 		
